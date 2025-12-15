@@ -39,7 +39,7 @@ const Login = () => {
     try {
       dispatch(signInStart())
 
-      const response = await axiosInstance.post("/auth/signin", {
+      const response = await axiosInstance.post("https://travel-diary-byanubhav.onrender.com/auth/signin", {
         email,
         password,
       })
