@@ -1,73 +1,57 @@
-import express from "express"
-import mongoose from "mongoose"
-import dotenv from "dotenv"
-import cookieParser from "cookie-parser"
-import path from "path"
-import cors from "cors"
+import express from "express";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
+import path from "path";
+import cors from "cors";
 
-import authRoutes from "./routes/auth.route.js"
-import userRoutes from "./routes/user.route.js"
-import travelStoryRoutes from "./routes/travelStory.route.js"
-import { fileURLToPath } from "url"
+import authRoutes from "./routes/auth.route.js";
+import userRoutes from "./routes/user.route.js";
+import travelStoryRoutes from "./routes/travelStory.route.js";
 
-dotenv.config()
+dotenv.config();
 
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log("Database is connected")
-  })
-  .catch((err) => {
-    console.log(err)
-  })
+  .then(() => console.log("Database is connected"))
+  .catch((err) => console.log(err));
 
-const app = express()
+const app = express();
+const __dirname = path.resolve();
 
-const __dirname=path.resolve();
-
-// Enable CORS for frontend (Replace with your frontend URL)
+// CORS
 app.use(
   cors({
-    origin: "https://travel-diary-byanubhav.onrender.com", //frontend URL
-    methods: ["GET", "POST", "PUT", "DELETE"], // Allow CRUD operations
-    credentials: true, // Allow cookies & authorization headers
+    origin: "https://travel-diary-byanubhav.onrender.com",
+    credentials: true,
   })
-)
+);
 
-app.use(cookieParser())
+app.use(cookieParser());
+app.use(express.json());
 
-// for allowing json object in req body
-app.use(express.json())
+// 🔹 API ROUTES FIRST
+app.use("/api/auth", authRoutes);
+app.use("/api/user", userRoutes);
+app.use("/api/travel-story", travelStoryRoutes);
 
-app.listen(3000, () => {
-  console.log("Server is running on port 3000!")
-})
+// 🔹 FRONTEND STATIC
+app.use(express.static(path.join(__dirname, "frontend/dist")));
+app.get("*", (_, res) => {
+  res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
+});
 
-app.use("/api/auth", authRoutes)
-app.use("/api/user", userRoutes)
-app.use("/api/travel-story", travelStoryRoutes)
-
-// server static files from the uploads and assets directory
-// const __filename = fileURLToPath(import.meta.url)
-// const __dirname = path.dirname(__filename)
-
-// app.use("/uploads", express.static(path.join(__dirname, "uploads")))
-
-// app.use("/assets", express.static(path.join(__dirname, "assets")))
-
-app.use(express.static(path.join(__dirname,"frontend/dist")))
-app.get('*',(_,res)=>{
-  res.sendFile(path.resolve(__dirname,"frontend","dist","index.html"));
-})
-
+// 🔹 ERROR HANDLER
 app.use((err, req, res, next) => {
-  const statusCode = err.statusCode || 500
-
-  const message = err.message || "Internal Server Error"
-
+  const statusCode = err.statusCode || 500;
   res.status(statusCode).json({
     success: false,
-    statusCode,
-    message,
-  })
-})
+    message: err.message || "Internal Server Error",
+  });
+});
+
+// 🔹 LISTEN LAST
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
