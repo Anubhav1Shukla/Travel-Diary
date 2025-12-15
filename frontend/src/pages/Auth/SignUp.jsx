@@ -3,11 +3,10 @@ import PasswordInput from "../../components/PasswordInput"
 import { useNavigate } from "react-router-dom"
 import axiosInstance from "../../utils/axiosInstance"
 import { validateEmail } from "../../utils/helper"
-import {  useSelector } from "react-redux"
+import { useSelector } from "react-redux"
 
 const SignUp = () => {
   const navigate = useNavigate()
-  // const dispatch = useDispatch()
 
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
@@ -19,6 +18,7 @@ const SignUp = () => {
   const handleSignUp = async (e) => {
     e.preventDefault()
 
+    // Basic validations
     if (!name) {
       setError("Please enter your name.")
       return
@@ -36,24 +36,33 @@ const SignUp = () => {
 
     setError(null)
 
-    // SignUp API call
     try {
-      const response = await axiosInstance.post("https://travel-diary-byanubhav.onrender.com/auth/signup", {
-        username: name,
-        email,
-        password,
-      })
+      /**
+       * ❌ OLD (WRONG)
+       * https://travel-diary-byanubhav.onrender.com/auth/signup
+       *
+       * ✅ FIXED
+       * Backend route is mounted at /api/auth
+       * So final endpoint must be /api/auth/signup
+       */
+      const response = await axiosInstance.post(
+        "https://travel-diary-byanubhav.onrender.com/api/auth/signup",
+        {
+          username: name,
+          email,
+          password,
+        },
+        {
+          withCredentials: true, // important for cookies/JWT
+        }
+      )
 
-      // handle successful sign-up response
+      // If signup is successful, go to login page
       if (response.data) {
         navigate("/login")
       }
     } catch (error) {
-      if (
-        error.response &&
-        error.response.data &&
-        error.response.data.message
-      ) {
+      if (error.response?.data?.message) {
         setError(error.response.data.message)
       } else {
         setError("Something went wrong. Please try again.")
@@ -61,11 +70,12 @@ const SignUp = () => {
     }
   }
 
+  // If user already logged in, redirect to home
   useEffect(() => {
     if (!loading && currentUser) {
       navigate("/")
     }
-  }, [currentUser])
+  }, [currentUser, loading, navigate])
 
   return (
     <div className="h-screen bg-cyan-50 overflow-hidden relative">
@@ -86,7 +96,9 @@ const SignUp = () => {
 
         <div className="w-2/4 h-[75vh] bg-white rounded-r-lg relative p-16 shadow-lg shadow-cyan-200/20">
           <form onSubmit={handleSignUp}>
-            <h4 className="text-2xl font-semibold mb-7">Create Your Account</h4>
+            <h4 className="text-2xl font-semibold mb-7">
+              Create Your Account
+            </h4>
 
             <input
               type="text"
@@ -106,12 +118,12 @@ const SignUp = () => {
 
             <PasswordInput
               value={password}
-              onChange={(e) => {
-                setPassword(e.target.value)
-              }}
+              onChange={(e) => setPassword(e.target.value)}
             />
 
-            {error && <p className="text-red-500 text-xs pb-1">{error}</p>}
+            {error && (
+              <p className="text-red-500 text-xs pb-1">{error}</p>
+            )}
 
             {loading ? (
               <p className="animate-pulse w-full text-center btn-primary">
@@ -126,7 +138,7 @@ const SignUp = () => {
             <p className="text-xs text-slate-500 text-center my-4">Or</p>
 
             <button
-              type="submit"
+              type="button"
               className="btn-primary btn-light"
               onClick={() => navigate("/login")}
             >

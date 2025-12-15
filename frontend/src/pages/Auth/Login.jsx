@@ -35,14 +35,27 @@ const Login = () => {
 
     setError(null)
 
-    // Login API call
     try {
       dispatch(signInStart())
 
-      const response = await axiosInstance.post("https://travel-diary-byanubhav.onrender.com/auth/signin", {
-        email,
-        password,
-      })
+      /**
+       * ❌ OLD (WRONG)
+       * https://travel-diary-byanubhav.onrender.com/auth/signin
+       *
+       * ✅ FIXED
+       * Backend route prefix is /api/auth
+       * Final endpoint must be /api/auth/signin
+       */
+      const response = await axiosInstance.post(
+        "https://travel-diary-byanubhav.onrender.com/api/auth/signin",
+        {
+          email,
+          password,
+        },
+        {
+          withCredentials: true, // required for cookies/JWT
+        }
+      )
 
       if (response.data) {
         dispatch(signInSuccess(response.data))
@@ -53,11 +66,7 @@ const Login = () => {
     } catch (error) {
       dispatch(signInFailure("An unexpected error occurred!"))
 
-      if (
-        error.response &&
-        error.response.data &&
-        error.response.data.message
-      ) {
+      if (error.response?.data?.message) {
         setError(error.response.data.message)
       } else {
         setError("Something went wrong. Please try again.")
@@ -65,11 +74,12 @@ const Login = () => {
     }
   }
 
+  // Redirect if user already logged in
   useEffect(() => {
     if (!loading && currentUser) {
       navigate("/")
     }
-  }, [currentUser])
+  }, [currentUser, loading, navigate])
 
   return (
     <div className="h-screen bg-cyan-50 overflow-hidden relative">
@@ -102,12 +112,12 @@ const Login = () => {
 
             <PasswordInput
               value={password}
-              onChange={(e) => {
-                setPassword(e.target.value)
-              }}
+              onChange={(e) => setPassword(e.target.value)}
             />
 
-            {error && <p className="text-red-500 text-xs pb-1">{error}</p>}
+            {error && (
+              <p className="text-red-500 text-xs pb-1">{error}</p>
+            )}
 
             {loading ? (
               <p className="animate-pulse w-full text-center btn-primary">
@@ -122,7 +132,7 @@ const Login = () => {
             <p className="text-xs text-slate-500 text-center my-4">Or</p>
 
             <button
-              type="submit"
+              type="button"
               className="btn-primary btn-light"
               onClick={() => navigate("/sign-up")}
             >
