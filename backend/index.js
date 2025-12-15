@@ -23,6 +23,8 @@ mongoose
 
 const app = express()
 
+const __dirname=path.resolve();
+
 // Enable CORS for frontend (Replace with your frontend URL)
 app.use(
   cors({
@@ -46,12 +48,17 @@ app.use("/api/user", userRoutes)
 app.use("/api/travel-story", travelStoryRoutes)
 
 // server static files from the uploads and assets directory
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+// const __filename = fileURLToPath(import.meta.url)
+// const __dirname = path.dirname(__filename)
 
-app.use("/uploads", express.static(path.join(__dirname, "uploads")))
+// app.use("/uploads", express.static(path.join(__dirname, "uploads")))
 
-app.use("/assets", express.static(path.join(__dirname, "assets")))
+// app.use("/assets", express.static(path.join(__dirname, "assets")))
+
+app.use(express.static(path.join(__dirname,"frontend/dist")))
+app.get('*',(_,res)=>{
+  res.sendFile(path.resolve(__dirname,"frontend","dist","index.html"));
+})
 
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500

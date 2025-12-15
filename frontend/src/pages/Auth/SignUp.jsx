@@ -3,11 +3,11 @@ import PasswordInput from "../../components/PasswordInput"
 import { useNavigate } from "react-router-dom"
 import axiosInstance from "../../utils/axiosInstance"
 import { validateEmail } from "../../utils/helper"
-import { useDispatch, useSelector } from "react-redux"
+import {  useSelector } from "react-redux"
 
 const SignUp = () => {
   const navigate = useNavigate()
-  const dispatch = useDispatch()
+  // const dispatch = useDispatch()
 
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
