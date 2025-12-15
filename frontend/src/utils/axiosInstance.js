@@ -1,6 +1,7 @@
-import axios from "axios"
+import axios from "axios";
 
-const BASE_URL = "http://localhost:3000/api"
+// ✅ PRODUCTION BACKEND URL (Render)
+const BASE_URL = "https://travel-diary-byanubhav.onrender.com/api";
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
@@ -8,6 +9,6 @@ const axiosInstance = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-})
+});
 
-export default axiosInstance
+export default axiosInstance;
